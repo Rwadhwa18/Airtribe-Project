@@ -2,59 +2,62 @@
     <div class="card_wrapper">
         <h2>Play with Cards</h2>
         <div class="card_list">
+            <!-- Not Started Section -->
             <div class="notStarted card_list_container" @drop="handleDrop('notStarted')" @dragover.prevent>
                 <div style="display: inline-flex; justify-content: space-between; color: darkred;"
                     class="status rounded-md bg-red-300">
                     <span>Not Started</span>
                     <span>{{ notStartedCards.length }}</span>
                 </div>
-                <!-- Not Started Card List -->
-                <draggable v-model="notStartedCards" @end="handleDragEnd('notStarted')">
-                    <div v-for="(card, index) in notStartedCards" :key="index" :draggable="true"
-                        @dragstart="handleDragStart(card, 'notStarted')">
-                        <CardLayout :cardId="card.id" />
-                    </div>
+                <draggable v-model="notStartedCards" group="cards" @change="log" itemKey="id">
+                    <template #item="{ element, index }">
+                        <div class="list-group-item  ">
+                            <CardLayout :cardId="element.id" />
+                        </div>
+                    </template>
                 </draggable>
                 <NewCard status="Not Started" @newCardAdded="addNewCard('Not Started')" />
             </div>
 
+            <!-- In Process Section -->
             <div class="inProcess card_list_container" @drop="handleDrop('inProcess')" @dragover.prevent>
                 <div style="color: darkgoldenrod;" class="rounded-md bg-amber-300 status">
                     <h3>In Process</h3>
                     <h3>{{ inProcessCards.length }}</h3>
                 </div>
-                <!-- In Process Card List -->
-                <draggable v-model="inProcessCards" @end="handleDragEnd('inProcess')">
-                    <div v-for="(card, index) in inProcessCards" :key="index" :draggable="true"
-                        @dragstart="handleDragStart(card, 'inProcess')">
-                        <CardLayout :cardId="card.id" />
-                    </div>
+                <draggable v-model="inProcessCards" group="cards" @change="log" itemKey="id">
+                    <template #item="{ element, index }">
+                        <div class="list-group-item">
+                            <CardLayout :cardId="element.id" />
+                        </div>
+                    </template>
                 </draggable>
                 <NewCard status="In Process" @newCardAdded="addNewCard('In Process')" />
             </div>
 
+            <!-- Completed Section -->
             <div class="completed card_list_container" @drop="handleDrop('completed')" @dragover.prevent>
                 <div style="color: darkgreen;" class="rounded-md bg-lime-300 status">
                     <span>Completed</span>
                     <span>{{ completedCards.length }}</span>
                 </div>
 
-                <!-- Completed Card List -->
-                <draggable v-model="completedCards" @end="handleDragEnd('completed')">
-                    <div v-for="(card, index) in completedCards" :key="index" :draggable="true"
-                        @dragstart="handleDragStart(card, 'completed')">
-                        <CardLayout :cardId="card.id" />
-                    </div>
+                <draggable v-model="completedCards" group="cards" @change="log" itemKey="id">
+                    <template #item="{ element, index }">
+                        <div class="list-group-item">
+                            <CardLayout :cardId="element.id" />
+                        </div>
+                    </template>
                 </draggable>
                 <NewCard status="Completed" @newCardAdded="addNewCard('Completed')" />
             </div>
-
         </div>
     </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
+import draggable from 'vuedraggable';
 
 const notStartedCards = ref([
     { status: 'Not Started', id: 1 },
@@ -78,44 +81,51 @@ const addNewCard = (status) => {
     else console.error('Invalid Status');
 }
 
-
-const handleDrop = (status) => (event) => {
+const handleDrop = (toStatus) => (event) => {
+    console.log('Dropped:', event);
+    event.preventDefault();
     const cardId = event.dataTransfer.getData('cardId');
     const cardStatus = event.dataTransfer.getData('cardStatus');
-    if (cardStatus !== status) {
-        if (cardStatus === 'Not Started') {
-            const index = notStartedCards.value.findIndex(card => card.id === parseInt(cardId));
-            const [draggedCard] = notStartedCards.value.splice(index, 1);
-            if (status === 'In Process')
-                inProcessCards.value.push(draggedCard);
-            else if (status === 'Completed')
-                completedCards.value.push(draggedCard);
-        } else if (cardStatus === 'In Process') {
-            const index = inProcessCards.value.findIndex(card => card.id === parseInt(cardId));
-            const [draggedCard] = inProcessCards.value.splice(index, 1);
-            if (status === 'Not Started')
-                notStartedCards.value.push(draggedCard);
-            else if (status === 'Completed')
-                completedCards.value.push(draggedCard);
-        } else if (cardStatus === 'Completed') {
-            const index = completedCards.value.findIndex(card => card.id === parseInt(cardId));
-            const [draggedCard] = completedCards.value.splice(index, 1);
-            if (status === 'Not Started')
-                notStartedCards.value.push(draggedCard);
-            else if (status === 'In Process')
-                inProcessCards.value.push(draggedCard);
+    if (cardStatus !== toStatus) {
+        const cardIndex = findCardIndexById(cardId, cardStatus);
+        if (cardIndex !== -1) {
+            const card = getStatusArray(cardStatus)[cardIndex];
+            if (card) {
+                moveCard(card, cardStatus, toStatus);
+            }
         }
     }
 }
 
-const handleDragStart = (card, status) => (event) => {
-    event.dataTransfer.setData('cardId', card.id.toString());
-    event.dataTransfer.setData('cardStatus', status);
+const findCardIndexById = (id, status) => {
+    const cardArray = getStatusArray(status);
+    return cardArray.findIndex(card => card.id === parseInt(id));
 }
 
-const handleDragEnd = (status) => (event) => {
-    event.preventDefault();
+const moveCard = (card, fromStatus, toStatus) => {
+    const fromArray = getStatusArray(fromStatus);
+    const toArray = getStatusArray(toStatus);
+    if (fromArray && toArray) {
+        const index = fromArray.findIndex(c => c.id === card.id);
+        console.log('Index:', index);
+        if (index !== -1) {
+            fromArray.splice(index, 1);
+            card.status = toStatus;
+            toArray.push(card);
+            console.log('Card moved successfully!');
+        }
+    }
 }
+
+const getStatusArray = (status) => {
+    if (status === 'Not Started') {
+        return notStartedCards.value;
+    } else if (status === 'In Process') { return inProcessCards.value; }
+    else if (status === 'Completed') {
+        return completedCards.value;
+    }
+}
+
 </script>
 
 <style>
