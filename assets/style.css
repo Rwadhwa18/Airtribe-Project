@@ -1,0 +1,36 @@
+body,
+html {
+    font-family: 'Nunito';
+    padding: 10px 0px 0px 18px;
+}
+
+.card_list {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content:space-around
+}
+
+.card_list h3 {
+    display: inline-block;
+    padding: 5px 10px; 
+    
+ margin: 0 15vw 0 0;
+}
+
+.card_list_container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    
+}
+
+.cardlayout{
+    width: 18vw;
+}
+
+.addcardBtn{
+    width: 18vw;
+    color: darkgray;
+}
