@@ -1,15 +1,15 @@
 <template>
     <div class="card_wrapper">
         <h2>Play with Cards</h2>
-        <div class="card_list">
-            <!-- Not Started Section -->
+       ` <div class="card_list">
+            <!-- Not Started Cards -->
             <div class="notStarted card_list_container" @drop="handleDrop('notStarted')" @dragover.prevent>
                 <div style="display: inline-flex; justify-content: space-between; color: darkred;"
                     class="status rounded-md bg-red-300">
                     <span>Not Started</span>
                     <span>{{ notStartedCards.length }}</span>
                 </div>
-                <draggable v-model="notStartedCards" group="cards" @change="log" itemKey="id">
+                <draggable v-model="notStartedCards" group="cards" itemKey="id">
                     <template #item="{ element, index }">
                         <div class="list-group-item  ">
                             <CardLayout :cardId="element.id" />
@@ -18,14 +18,14 @@
                 </draggable>
                 <NewCard status="Not Started" @newCardAdded="addNewCard('Not Started')" />
             </div>
-
-            <!-- In Process Section -->
+`
+            <!-- In Process Cards-->
             <div class="inProcess card_list_container" @drop="handleDrop('inProcess')" @dragover.prevent>
                 <div style="color: darkgoldenrod;" class="rounded-md bg-amber-300 status">
                     <h3>In Process</h3>
                     <h3>{{ inProcessCards.length }}</h3>
                 </div>
-                <draggable v-model="inProcessCards" group="cards" @change="log" itemKey="id">
+                <draggable v-model="inProcessCards" group="cards"  itemKey="id">
                     <template #item="{ element, index }">
                         <div class="list-group-item">
                             <CardLayout :cardId="element.id" />
@@ -35,14 +35,14 @@
                 <NewCard status="In Process" @newCardAdded="addNewCard('In Process')" />
             </div>
 
-            <!-- Completed Section -->
+            <!-- Completed Cards -->
             <div class="completed card_list_container" @drop="handleDrop('completed')" @dragover.prevent>
                 <div style="color: darkgreen;" class="rounded-md bg-lime-300 status">
                     <span>Completed</span>
                     <span>{{ completedCards.length }}</span>
                 </div>
 
-                <draggable v-model="completedCards" group="cards" @change="log" itemKey="id">
+                <draggable v-model="completedCards" group="cards"  itemKey="id">
                     <template #item="{ element, index }">
                         <div class="list-group-item">
                             <CardLayout :cardId="element.id" />
